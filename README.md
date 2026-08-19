@@ -13,8 +13,7 @@ But also plain laziness:
 A snapshot/backup is marked as "successful" even though the actual application inside was never cleanly restarted afterward.
 These scripts solve this using simple flag files on a NAS: each stage (backup, snapshot, VM reboot) leaves behind a timestamped file that the next stage checks as a "release condition" — technically implemented as a PRE-script in the respective NinjaOne patch policy.
 
-
-Process Flow (Simplified)
+Process Flow:
 
 Backup Server (Veeam)  --Backup OK-->  Flag: VeeamBackup_Success_<Date>.flag
                                               |
@@ -28,9 +27,10 @@ VM policy POST-script (after reboot verification) writes
                                               v
 Backup server script waits for ALL VmUpdateDone flags,
     ONLY THEN is the backup server allowed to patch itself
+
 For Hyper-V, there's an additional stage: the host must create a checkpoint per VM before the VM update (ESXi already handles this itself via Veeam's native VMware integration, so no equivalent is needed there). For Hyper-V, several alternative implementation variants exist in the repo (see repo structure), since snapshot and backup don't always need to be combined depending on customer requirements.
-Repo Structure
-text
+
+Repo:
 .
 ├── README.md
 ├── .gitignore
@@ -79,6 +79,7 @@ text
                                                 when checkpoints should be
                                                 avoided for performance or
                                                 storage reasons.
+
 Note: hyperv/ deliberately contains several alternative implementations instead of a single final solution. Only the applicable proposal is used per customer — depending on whether snapshot and backup should be checked in combination, or whether only one of the two conditions is sufficient. ESXi-Scripts/ is independent of this and covers only the ESXi environment.
 TODO: Add the exact script names and their PRE/POST assignment within each Proposal_* folder here once it's finally decided which variant is used in production, or how the folders differ in detail.
 Required NinjaOne Custom Fields
